@@ -1,0 +1,5 @@
+[features]
+plugin_hooks = true
+
+[plugins."tracing@langsmith-codex-plugins"]
+enabled = true
