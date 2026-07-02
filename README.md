@@ -40,6 +40,10 @@ Important reminder:
 
 Simple arcade-style racing game.
 
+The current game includes three selectable tracks (Backyard, Forest, and Beach),
+drag-to-steer controls, collectibles, obstacles, a finish/results screen, replay,
+and track selection. Ideas explicitly marked as future work are not implemented.
+
 ```text
 Choose Track
 ↓
@@ -80,7 +84,7 @@ Prioritize:
 - bright colors
 - simple controls
 - funny animations
-- rewarding sounds
+- rewarding sounds (future idea)
 - clear visual feedback
 - large touch targets
 
@@ -129,6 +133,9 @@ Not required for initial version.
 
 Players collect good objects for points.
 
+The current game shows a simple score. The object-specific values and richer
+collection breakdowns below are future ideas.
+
 ## Positive Collectibles
 
 Examples:
@@ -161,7 +168,7 @@ Collisions do **not** stop the race.
 On collision:
 
 - play bounce animation
-- play funny sound effect
+- play funny sound effect (future idea)
 - continue moving
 
 There is no failure state.
@@ -189,6 +196,8 @@ No acceleration.
 ---
 
 # Tracks
+
+The current selectable tracks are Backyard, Forest, and Beach.
 
 ## 🌱 Backyard (Easy)
 
@@ -253,7 +262,7 @@ Characteristics:
 
 ---
 
-## ❄️ Snow Land (Hard)
+## Future Idea — ❄️ Snow Land (Hard)
 
 Collect:
 
@@ -272,7 +281,7 @@ Characteristics:
 
 ---
 
-## 🍭 Candy Land (Chaos Mode)
+## Future Idea — 🍭 Candy Land (Chaos Mode)
 
 Collect:
 
@@ -288,7 +297,7 @@ Because obviously.
 
 ---
 
-# Vehicle Selection
+# Future Idea — Vehicle Selection
 
 Pure cosmetic selection.
 
@@ -306,7 +315,9 @@ No gameplay difference.
 
 # End Of Race Screen
 
-At the finish line show:
+The current results screen shows the final score and lets the player replay the
+same track or choose a track. A richer collection breakdown like the following
+is a future idea:
 
 ```text
 Amazing Driving!
@@ -357,7 +368,57 @@ Frontend only.
 
 ## Audio
 
-- Web Audio API
+- Web Audio API (future idea; sounds are not currently implemented)
+
+---
+
+# Development and PWA Verification
+
+Run the complete local production verification from a clean checkout:
+
+```bash
+npm ci
+npm test
+npx tsc --noEmit
+npm run build
+npm run preview -- --host 127.0.0.1
+```
+
+`npm run build` validates the web app manifest metadata, install icons, precache
+membership, navigation fallback, and local HTML assets. After it succeeds, use
+the preview URL to check the production build on the desktop.
+
+Localhost is valid for desktop service-worker checks. An iPad must use the HTTPS
+Vercel deployment; a LAN HTTP preview is not a valid iPad installation or
+offline-service-worker test.
+
+## Install on iPad
+
+1. Deploy the production build to Vercel.
+2. While online, open the HTTPS Vercel URL in Safari on the iPad.
+3. Tap **Share → Add to Home Screen**.
+4. Launch Tiny Racers from its new Home Screen icon while still online.
+5. Wait until the game shows **✅ Ready to play offline** before disconnecting.
+
+## Pre-flight Airplane-mode Test
+
+Run this test on the physical iPad shortly before travel:
+
+- [ ] While still online, confirm the installed app shows **✅ Ready to play offline**.
+- [ ] Force-close both Safari and the installed Tiny Racers app.
+- [ ] Enable airplane mode and confirm Wi-Fi is off.
+- [ ] Cold-launch Tiny Racers from its Home Screen icon.
+- [ ] Confirm all three track cards appear: Backyard, Forest, and Beach.
+- [ ] On a race, confirm drag steering works.
+- [ ] Collect an item and confirm the score increases.
+- [ ] Hit an obstacle and confirm the score penalty without stopping the race.
+- [ ] Finish the race and confirm the results screen appears.
+- [ ] Use **Race Again** and confirm the same track starts.
+- [ ] Use **Choose Track** and confirm track selection returns.
+- [ ] Play all three themes and confirm Backyard, Forest, and Beach each load offline.
+- [ ] Reboot the iPad while it remains offline.
+- [ ] Repeat the offline cold launch from the Home Screen and confirm the game still works.
+- [ ] Record the iPad model, iPadOS version, test date, and overall pass/fail result.
 
 ---
 

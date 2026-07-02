@@ -27,17 +27,17 @@
 **Interfaces:**
 - Produces: `TrackId`, `TrackConfig`, `TRACKS`, `TRACK_LENGTH`, `getTrack(trackId?: string)`, and `raceDurationMs(speed)`.
 
-- [ ] **Step 1: Write failing configuration tests**
+- [x] **Step 1: Write failing configuration tests**
 
 Test that the record contains exactly `backyard`, `forest`, and `beach`; assert every exact name, road width, speed, collectible set, and obstacle set from the spec. Verify invalid/missing IDs return Backyard and durations are 12,000 ms, 10,500 ms, and approximately 9,333.33 ms.
 
-- [ ] **Step 2: Run the focused test and verify RED**
+- [x] **Step 2: Run the focused test and verify RED**
 
 Run: `npm test -- src/tracks.test.ts`
 
 Expected: FAIL because `tracks.ts` does not exist.
 
-- [ ] **Step 3: Implement the minimal configuration module**
+- [x] **Step 3: Implement the minimal configuration module**
 
 Create the exact `TrackId` and `TrackConfig` types from the spec, `TRACK_LENGTH = 5_040`, one explicit `TRACKS` object, and:
 
@@ -51,7 +51,7 @@ export function raceDurationMs(speed: number): number {
 }
 ```
 
-- [ ] **Step 4: Run the focused test and verify GREEN**
+- [x] **Step 4: Run the focused test and verify GREEN**
 
 Run: `npm test -- src/tracks.test.ts`
 
@@ -69,17 +69,17 @@ Expected: all track configuration tests pass.
 - Consumes: `TRACKS` and `TrackId`.
 - Produces: scene key `track-select`; each card calls `scene.start('race', { trackId })`.
 
-- [ ] **Step 1: Write failing selection tests**
+- [x] **Step 1: Write failing selection tests**
 
 Use Phaser display-object doubles to verify the screen renders `Choose Your Track!`, `🌱 Backyard`, `🌲 Forest`, and `🏖️ Beach`; verify there are exactly three interactive cards and tapping each sends its matching ID to `race`.
 
-- [ ] **Step 2: Run the focused test and verify RED**
+- [x] **Step 2: Run the focused test and verify RED**
 
 Run: `npm test -- src/TrackSelectScene.test.ts`
 
 Expected: FAIL because `TrackSelectScene.ts` does not exist.
 
-- [ ] **Step 3: Implement the selection scene**
+- [x] **Step 3: Implement the selection scene**
 
 Render a bright heading and three 280×430 cards across the landscape screen. Each card uses its config colors, large emoji/name text, its collectible and obstacle emoji rows, and whole-card pointer feedback. Keep the click handler direct:
 
@@ -89,7 +89,7 @@ button.on('pointerup', () => this.scene.start('race', { trackId: track.id }))
 
 Remove the obsolete placeholder menu and its tests.
 
-- [ ] **Step 4: Run the focused test and verify GREEN**
+- [x] **Step 4: Run the focused test and verify GREEN**
 
 Run: `npm test -- src/TrackSelectScene.test.ts`
 
@@ -105,7 +105,7 @@ Expected: all selection tests pass.
 - Consumes: `TrackConfig`, `TrackId`, `getTrack`, and `raceDurationMs`.
 - Produces: `init({ trackId?: string }): void`, dynamic road bounds, normalized lanes, track placeholder sets, themed background, configured speed, and configured duration.
 
-- [ ] **Step 1: Write failing race-configuration tests**
+- [x] **Step 1: Write failing race-configuration tests**
 
 Extend the testable scene with `track`, `roadLeft`, `roadRight`, `init`, and any focused rendering methods. Verify:
 
@@ -117,13 +117,13 @@ Extend the testable scene with `track`, `roadLeft`, `roadRight`, `init`, and any
 - lane movement uses `track.speed`;
 - finish-line tiles fit the configured width.
 
-- [ ] **Step 2: Run the focused race tests and verify RED**
+- [x] **Step 2: Run the focused race tests and verify RED**
 
 Run: `npm test -- src/RaceScene.test.ts`
 
 Expected: FAIL because `RaceScene` still uses fixed Backyard constants and shape placeholders.
 
-- [ ] **Step 3: Implement configuration-driven race behavior**
+- [x] **Step 3: Implement configuration-driven race behavior**
 
 Add a default Backyard `track` field and `init` lookup. Replace fixed road edges and speed/duration constants with values derived from `track`. Replace layout x-values with `lane: -0.28 | 0 | 0.28` and compute:
 
@@ -133,7 +133,7 @@ const x = ROAD_CENTER + lane * this.track.roadWidth
 
 Render collectibles and obstacles with `this.add.text` using the configured emoji arrays, retaining the existing collision sizes and one-time state. Draw shared sky/ground colors and a direct three-case decoration switch. Size road, borders, dashes, finish line, steering, and reset positions from selected road width.
 
-- [ ] **Step 4: Run the focused race tests and verify GREEN**
+- [x] **Step 4: Run the focused race tests and verify GREEN**
 
 Run: `npm test -- src/RaceScene.test.ts`
 
@@ -155,21 +155,21 @@ Expected: all `RaceScene` tests pass.
 - Changes: secondary result action is `Choose Track` → `track-select`.
 - Changes: game scenes become `[TrackSelectScene, RaceScene, ResultsScene]`.
 
-- [ ] **Step 1: Write failing flow tests**
+- [x] **Step 1: Write failing flow tests**
 
 Verify race completion includes the selected track ID; results replay passes that ID; the second button renders `Choose Track` and starts `track-select`; game configuration starts with `TrackSelectScene`.
 
-- [ ] **Step 2: Run the focused flow tests and verify RED**
+- [x] **Step 2: Run the focused flow tests and verify RED**
 
 Run: `npm test -- src/RaceScene.test.ts src/ResultsScene.test.ts src/main.test.ts`
 
 Expected: FAIL on missing track ID, old menu action, and old registration order.
 
-- [ ] **Step 3: Implement track-preserving scene flow**
+- [x] **Step 3: Implement track-preserving scene flow**
 
 Add `trackId` to results data, store it safely with Backyard fallback in `ResultsScene.init`, pass it on replay, replace `Main Menu` with `Choose Track`, and register/import `TrackSelectScene` first in `main.ts`.
 
-- [ ] **Step 4: Run the focused flow tests and verify GREEN**
+- [x] **Step 4: Run the focused flow tests and verify GREEN**
 
 Run: `npm test -- src/RaceScene.test.ts src/ResultsScene.test.ts src/main.test.ts`
 
@@ -183,29 +183,29 @@ Expected: all focused flow tests pass.
 **Interfaces:**
 - Produces: durable Milestone 6 implementation and verification record.
 
-- [ ] **Step 1: Run the complete suite**
+- [x] **Step 1: Run the complete suite**
 
 Run: `npm test`
 
 Expected: every test passes with zero failures.
 
-- [ ] **Step 2: Run TypeScript validation**
+- [x] **Step 2: Run TypeScript validation**
 
 Run: `npx tsc --noEmit`
 
 Expected: exit code `0` with no errors.
 
-- [ ] **Step 3: Build the production PWA**
+- [x] **Step 3: Build the production PWA**
 
 Run: `npm run build`
 
 Expected: exit code `0`, generated app bundle, manifest, and service worker; the existing size warning remains non-blocking.
 
-- [ ] **Step 4: Update the implementation record**
+- [x] **Step 4: Update the implementation record**
 
 Append exact Milestone 6 track values, scene flow, preserved behavior, test count, typecheck/build results, and remaining browser/iPad checks to `implemented.md`.
 
-- [ ] **Step 5: Review scope and whitespace**
+- [x] **Step 5: Review scope and whitespace**
 
 Run: `git diff --check` and `git status --short`.
 

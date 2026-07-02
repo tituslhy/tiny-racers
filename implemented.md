@@ -7,11 +7,11 @@ This file is the durable handoff record for completed work, decisions, verificat
 ## Repository State
 
 - Current branch: `main`.
-- Milestones 3–6 have been implemented in the existing checkout at the user's request; substantial application, test, plan, and record changes remain uncommitted.
-- Preserve every currently modified or untracked file. Do not reset, discard, or overwrite earlier Milestone 3–5 work while continuing Milestone 6.
+- Milestones 3–6 were committed by the user in `1324bbd update milestone 5 tasks` after the initial handoff update.
+- Preserve the current completion-review and documentation edits; do not reset, discard, or overwrite earlier milestone work.
 - Milestone 5 design commit: `9c715d5 docs: define milestone 5 race results`.
 - Milestone 6 design commit: `90b0444 docs: define milestone 6 track selection`.
-- The Milestone 5 and Milestone 6 implementation plans currently remain uncommitted.
+- The Milestone 5 and Milestone 6 implementation plans are included in `1324bbd`.
 - Milestone 3 was implemented directly on `main` at the user's request.
 - Commit `5dd0135 add initial code` is the 2026-07-02 stock-take baseline and contains the main application plus the Milestone 3 scene implementation.
 - The 2026-07-02 stock take preserved pre-existing `src/RaceScene.test.ts` test-strengthening changes.
@@ -259,7 +259,7 @@ Milestone 5 still requires a browser interaction check and a physical-iPad airpl
 
 ## Milestone 6: Track Selection and Configuration
 
-Status at handoff: implementation is functionally complete and automated checks pass, but the final diff/spec review and final documentation pass were interrupted. Do not claim final completion until the remaining handoff steps below are completed.
+Status: implementation, final code/spec review, and browser interaction validation are complete. The physical-iPad airplane-mode check remains a release-readiness task before travel.
 
 Approved design decisions:
 
@@ -275,7 +275,7 @@ Approved design decisions:
 Design and plan:
 
 - committed specification: `docs/superpowers/specs/2026-07-02-track-selection-and-configuration-design.md`;
-- uncommitted implementation plan: `docs/superpowers/plans/2026-07-02-track-selection-and-configuration.md`.
+- implementation plan (included in `1324bbd`): `docs/superpowers/plans/2026-07-02-track-selection-and-configuration.md`.
 
 ### Implemented Track Configuration
 
@@ -298,6 +298,7 @@ New `src/TrackSelectScene.ts`:
 - uses scene key `track-select`;
 - displays `Choose Your Track!` and three large side-by-side cards;
 - shows each track's colors, name, emoji, simple road preview, collectible set, and obstacle set;
+- uses each configured accent color for its card border;
 - makes each whole card interactive with simple press-scale feedback;
 - starts the race immediately with `{ trackId }` after one tap.
 
@@ -348,23 +349,28 @@ Red-green cycles completed:
 - scene-flow tests produced 5 expected failures for missing track propagation and old menu navigation, then all 23 focused tests passed;
 - TypeScript subsequently found three test-double typing issues; those test-only signatures were corrected.
 
-Latest successful automated checks before handoff:
+Final automated checks on 2026-07-02:
 
 - `npm test`: 6 test files passed, 42 tests passed, 0 failures.
 - `npx tsc --noEmit`: passed with no TypeScript errors.
 - `npm run build`: passed; Vite 6.4.3 transformed 10 modules and generated the production bundle and PWA service worker.
-- PWA output precaches 5 entries totaling approximately 1,659.34 KiB.
-- The existing non-blocking large-chunk warning remains: the application bundle is approximately 1,697.91 kB minified and 385.74 kB gzipped.
+- PWA output precaches 5 entries totaling approximately 1,659.35 KiB.
+- The existing non-blocking large-chunk warning remains: the application bundle is approximately 1,697.92 kB minified and 385.75 kB gzipped.
 
-### Milestone 6 Remaining Handoff Work
+Final review and browser validation:
 
-1. Perform a focused final code/spec review of the uncommitted Milestone 6 diff, including scene restart behavior and all three track configurations.
-2. Run `git diff --check` and inspect `git status --short`; preserve all earlier uncommitted work.
-3. After any review edits, rerun fresh `npm test`, `npx tsc --noEmit`, and `npm run build` before claiming Milestone 6 complete.
-4. Update the verification numbers in this record if final commands differ from the latest results above.
-5. Perform a browser interaction check covering all three track cards, steering bounds, object collisions, finish transition, same-track replay, and `Choose Track` navigation.
-6. Test the production PWA on a physical iPad in airplane mode before travel.
-7. Keep changes uncommitted unless the user explicitly asks for a commit; if committing, stage carefully because Milestones 3–6 overlap in `RaceScene.ts`, `RaceScene.test.ts`, `main.ts`, and `implemented.md`.
+- reviewed the Milestone 6 implementation against the approved specification and plan;
+- confirmed Phaser supplies an empty data object when a scene starts without explicit data, so the Backyard fallback remains safe;
+- validated all three track cards and their distinct race themes at a 1024×768 landscape viewport;
+- validated touch-style horizontal steering to a road edge;
+- observed collectible scoring, an obstacle penalty, finish-line completion, and the results totals;
+- validated same-track replay and `Choose Track` navigation;
+- observed no browser console warnings or errors during the interaction pass;
+- `git diff --check` passed.
+
+### Milestone 6 Remaining Release Check
+
+1. Install the production PWA on a physical iPad, launch it in landscape, then cold-launch and play it in airplane mode before travel.
 
 ## Constraints
 

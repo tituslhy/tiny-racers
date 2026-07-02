@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 
+import { waitForOfflineReady } from './offlineReady'
 import { TRACKS, type TrackConfig } from './tracks'
 
 const WIDTH = 1024
@@ -31,11 +32,28 @@ export class TrackSelectScene extends Phaser.Scene {
     Object.values(TRACKS).forEach((track, index) => {
       this.createTrackCard(CARD_X[index], track)
     })
+
+    const badgeColor = 0xa8e063
+    this.add.rectangle(WIDTH / 2, 710, 400, 62, badgeColor)
+    this.add.circle(WIDTH / 2 - 200, 710, 31, badgeColor)
+    this.add.circle(WIDTH / 2 + 200, 710, 31, badgeColor)
+
+    const status = this.add.text(WIDTH / 2, 710, 'Getting travel-ready…', {
+      color: '#18243b',
+      fontFamily: FONT,
+      fontSize: '26px',
+      fontStyle: 'bold',
+    })
+    status.setOrigin(0.5)
+
+    void waitForOfflineReady().then((ready) => {
+      if (ready && status.active) status.setText('✅ Ready to play offline')
+    })
   }
 
   private createTrackCard(x: number, track: TrackConfig): void {
     const button = this.add.rectangle(x, 414, 280, 450, track.groundColor)
-    button.setStrokeStyle(10, 0xfff8e7)
+    button.setStrokeStyle(10, track.accentColor)
     button.setInteractive({ useHandCursor: true })
 
     this.add.rectangle(x, 240, 250, 82, track.skyColor)
