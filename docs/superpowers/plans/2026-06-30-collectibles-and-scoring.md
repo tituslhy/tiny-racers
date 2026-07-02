@@ -8,6 +8,8 @@
 
 **Tech Stack:** TypeScript 6, Phaser 4, Vitest 4, Vite 6
 
+**Implementation status (audited 2026-07-02):** Tasks 1 and 2 are fully implemented. Task 3 verification and the durable record are current; only the final record commit remains. The unchecked step boxes below are the original execution script, not an indication of missing production behavior.
+
 ## Global Constraints
 
 - Use one collectible type: a yellow star placeholder.
