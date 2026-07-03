@@ -12,6 +12,46 @@ Success metric:
 
 ---
 
+# How to Play
+
+Tiny Racers needs only one finger. There are no lives, timers, or losing screens,
+and every race finishes so children can take turns.
+
+1. Tap **Backyard**, **Forest**, or **Beach** to start a race.
+2. The car drives forward automatically.
+3. Put a finger on the road and drag left or right to steer.
+4. Drive into the yellow collectible stickers to earn **10 points**.
+5. Try to avoid the coral obstacle stickers. A bump removes **10 points**, never
+   takes the score below zero, and never stops the race.
+6. Cross the checkered finish line, then tap **Race Again** or **Choose Track**.
+
+For a flight, launch the installed game while still online and wait for
+**✅ Ready to play offline** before enabling airplane mode. See
+[Install on iPad](#install-on-ipad) for the full setup checklist.
+
+## 1. Choose a Track
+
+Each large card starts its track with one tap. Backyard is the slowest and
+widest; Forest is faster and narrower; Beach is the fastest and narrowest.
+
+![Tiny Racers track selection showing Backyard, Forest, and Beach](docs/screenshots/track-selection.jpg)
+
+## 2. Steer, Collect, and Keep Going
+
+Drag horizontally to move the toy car. Collect the yellow-backed objects and
+drive around the coral-backed obstacles. Bumps are silly, not failures.
+
+![Beach race with the toy car, collectible stickers, obstacles, and score](docs/screenshots/beach-race.jpg)
+
+## 3. Finish and Take Turns
+
+The results screen celebrates every race. **Race Again** repeats the same track;
+**Choose Track** returns to the three track cards for the next player.
+
+![Tiny Racers results screen with score, collected items, and silly bumps](docs/screenshots/results.jpg)
+
+---
+
 # Project Philosophy
 
 This project is intentionally small.
