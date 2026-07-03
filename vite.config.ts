@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
+      includeAssets: ['icons/apple-touch-icon-180.png'],
       manifest: {
         name: 'Tiny Racers',
         short_name: 'Tiny Racers',
@@ -14,6 +15,30 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'landscape',
         start_url: '/',
+        scope: '/',
+        id: '/',
+        lang: 'en',
+        categories: ['games', 'kids'],
+        icons: [
+          {
+            src: '/icons/tiny-racers-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/icons/tiny-racers-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/icons/tiny-racers-maskable-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+        ],
       },
     }),
   ],

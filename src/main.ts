@@ -1,9 +1,11 @@
 import Phaser from 'phaser'
 
 import { RaceScene } from './RaceScene'
+import { ResultsScene } from './ResultsScene'
+import { TrackSelectScene } from './TrackSelectScene'
 import './style.css'
 
-const config: Phaser.Types.Core.GameConfig = {
+export const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   parent: 'game',
   backgroundColor: '#38bdf8',
@@ -13,7 +15,7 @@ const config: Phaser.Types.Core.GameConfig = {
     width: 1024,
     height: 768,
   },
-  scene: [RaceScene],
+  scene: [TrackSelectScene, RaceScene, ResultsScene],
 }
 
-new Phaser.Game(config)
+new Phaser.Game(gameConfig)
