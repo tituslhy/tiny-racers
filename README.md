@@ -364,7 +364,7 @@ Frontend only.
 
 ## Persistence
 
-- localStorage
+- localStorage is an optional future tool; current gameplay does not require or use it
 
 ## Audio
 

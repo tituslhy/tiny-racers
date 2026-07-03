@@ -4,8 +4,8 @@ import {
   advanceRace,
   centeredBoundsOverlap,
   clampCarX,
-  collectibleY,
   isRaceFinished,
+  travelY,
 } from './gameplay'
 import { getTrack, raceDurationMs, type TrackConfig, type TrackId } from './tracks'
 
@@ -58,14 +58,15 @@ const OBSTACLE_LAYOUT = [
 interface Collectible {
   x: number
   spawnProgress: number
-  sprite: Phaser.GameObjects.Text
+  phase: number
+  sprite: Phaser.GameObjects.Container
   collected: boolean
 }
 
 interface Obstacle {
   x: number
   spawnProgress: number
-  sprite: Phaser.GameObjects.Text
+  sprite: Phaser.GameObjects.Container
   hit: boolean
 }
 
@@ -146,6 +147,13 @@ export class RaceScene extends Phaser.Scene {
     this.add.circle(895, 54, 18, COLORS.white)
 
     if (this.track.id === 'backyard') {
+      for (const startX of [68, 820]) {
+        for (let panel = 0; panel < 3; panel += 1) {
+          const x = startX + panel * 48
+          this.add.rectangle(x, 336, 40, 72, COLORS.white)
+          this.add.rectangle(x, 314, 34, 8, 0xe8d7b6)
+        }
+      }
       this.drawTree(112, 218)
       this.drawTree(900, 238)
       this.drawFlowers(132, 470)
@@ -155,7 +163,18 @@ export class RaceScene extends Phaser.Scene {
       this.drawTree(900, 225)
       this.drawTree(135, 540)
       this.drawTree(885, 570)
+      for (const [x, y] of [[195, 650], [830, 410]] as const) {
+        this.add.rectangle(x, y + 12, 10, 24, COLORS.white)
+        this.add.circle(x, y, 15, 0xff7f66)
+        this.add.circle(x - 5, y - 3, 3, COLORS.white)
+        this.add.circle(x + 6, y + 2, 3, COLORS.white)
+      }
     } else {
+      this.add.rectangle(WIDTH / 2, 300, WIDTH, 90, 0x58c9e8)
+      this.add.rectangle(WIDTH / 2, 510, WIDTH, 74, 0x49b9dc)
+      for (const [x, y] of [[90, 292], [194, 508], [824, 292], [930, 508]] as const) {
+        this.add.rectangle(x, y, 52, 8, COLORS.white)
+      }
       this.add.circle(105, 220, 54, 0xffa95c)
       this.add.circle(910, 250, 46, 0xff7f66)
       this.add.circle(110, 570, 34, 0xfff8e7)
@@ -194,9 +213,16 @@ export class RaceScene extends Phaser.Scene {
     this.add.rectangle(
       ROAD_CENTER,
       HEIGHT / 2 + 54,
+      this.track.roadWidth + 36,
+      HEIGHT - 108,
+      this.track.edgeColor,
+    )
+    this.add.rectangle(
+      ROAD_CENTER,
+      HEIGHT / 2 + 54,
       this.track.roadWidth,
       HEIGHT - 108,
-      COLORS.asphalt,
+      this.track.roadColor,
     )
     this.add.rectangle(this.roadLeft + 7, HEIGHT / 2 + 54, 14, HEIGHT - 108, COLORS.white)
     this.add.rectangle(this.roadRight - 7, HEIGHT / 2 + 54, 14, HEIGHT - 108, COLORS.white)
@@ -214,15 +240,18 @@ export class RaceScene extends Phaser.Scene {
   private createCollectibles(): void {
     this.collectibles = COLLECTIBLE_LAYOUT.map(({ lane, spawnProgress }, index) => {
       const x = this.laneX(lane)
-      const sprite = this.add.text(
-        x,
-        COLLECTIBLE_START_Y,
+      const badge = this.add.circle(0, 0, 39, 0xffd43b, 0.95)
+      badge.setStrokeStyle(6, COLORS.white)
+      const icon = this.add.text(
+        0,
+        0,
         this.track.collectibles[index % this.track.collectibles.length],
-        { fontSize: '54px', fontFamily: 'Arial, sans-serif' },
+        { fontSize: '48px', fontFamily: 'Arial, sans-serif' },
       )
-      sprite.setOrigin(0.5)
+      icon.setOrigin(0.5)
+      const sprite = this.add.container(x, COLLECTIBLE_START_Y, [badge, icon])
       sprite.setVisible(false)
-      return { x, spawnProgress, sprite, collected: false }
+      return { x, spawnProgress, phase: index * 0.9, sprite, collected: false }
     })
   }
 
@@ -230,7 +259,7 @@ export class RaceScene extends Phaser.Scene {
     for (const collectible of this.collectibles) {
       if (collectible.collected) continue
 
-      const y = collectibleY(
+      const y = travelY(
         this.progress,
         collectible.spawnProgress,
         COLLECTIBLE_START_Y,
@@ -240,6 +269,9 @@ export class RaceScene extends Phaser.Scene {
       const visible = this.progress >= collectible.spawnProgress && y <= COLLECTIBLE_END_Y
       collectible.sprite.setPosition(collectible.x, y)
       collectible.sprite.setVisible(visible)
+      const wiggle = Math.sin(this.progress * 36 + collectible.phase)
+      collectible.sprite.setAngle(wiggle * 5)
+      collectible.sprite.setScale(1 + wiggle * 0.04)
       if (
         visible &&
         centeredBoundsOverlap(
@@ -251,20 +283,56 @@ export class RaceScene extends Phaser.Scene {
         collectible.sprite.setVisible(false)
         this.score += COLLECTIBLE_SCORE
         this.scoreText.setText(`⭐ ${this.score}`)
+        this.playCollectFeedback(collectible.x, y)
       }
     }
+  }
+
+  private playCollectFeedback(x: number, y: number): void {
+    const effect = this.add.text(x, y - 20, '+10 ✨', {
+      color: '#ffd43b',
+      fontFamily: 'Arial Rounded MT Bold, Trebuchet MS, sans-serif',
+      fontSize: '34px',
+      fontStyle: 'bold',
+      stroke: '#18243b',
+      strokeThickness: 6,
+    })
+    effect.setOrigin(0.5)
+    effect.setDepth(30)
+
+    this.tweens.add({
+      targets: effect,
+      y: y - 90,
+      alpha: 0,
+      scale: 1.25,
+      duration: 420,
+      ease: 'Sine.Out',
+      onComplete: () => effect.destroy(),
+    })
+
+    this.tweens.killTweensOf(this.scoreText)
+    this.scoreText.setScale(1)
+    this.tweens.add({
+      targets: this.scoreText,
+      scale: { from: 1.22, to: 1 },
+      duration: 180,
+      ease: 'Back.Out',
+    })
   }
 
   private createObstacles(): void {
     this.obstacles = OBSTACLE_LAYOUT.map(({ lane, spawnProgress }, index) => {
       const x = this.laneX(lane)
-      const sprite = this.add.text(
-        x,
-        OBSTACLE_START_Y,
+      const badge = this.add.circle(0, 0, 41, 0xffb6a3, 0.96)
+      badge.setStrokeStyle(6, COLORS.white)
+      const icon = this.add.text(
+        0,
+        0,
         this.track.obstacles[index % this.track.obstacles.length],
-        { fontSize: '58px', fontFamily: 'Arial, sans-serif' },
+        { fontSize: '50px', fontFamily: 'Arial, sans-serif' },
       )
-      sprite.setOrigin(0.5)
+      icon.setOrigin(0.5)
+      const sprite = this.add.container(x, OBSTACLE_START_Y, [badge, icon])
       sprite.setVisible(false)
       return { x, spawnProgress, sprite, hit: false }
     })
@@ -274,7 +342,7 @@ export class RaceScene extends Phaser.Scene {
     for (const obstacle of this.obstacles) {
       if (obstacle.hit) continue
 
-      const y = collectibleY(
+      const y = travelY(
         this.progress,
         obstacle.spawnProgress,
         OBSTACLE_START_Y,
@@ -311,10 +379,10 @@ export class RaceScene extends Phaser.Scene {
     this.car.setScale(1)
     this.tweens.add({
       targets: this.car,
-      angle: { from: -8, to: 0 },
-      scaleX: { from: 0.9, to: 1 },
-      scaleY: { from: 1.08, to: 1 },
-      duration: 220,
+      angle: { from: -10, to: 0 },
+      scaleX: { from: 0.88, to: 1 },
+      scaleY: { from: 1.12, to: 1 },
+      duration: 260,
       ease: 'Bounce.Out',
     })
   }
@@ -335,6 +403,20 @@ export class RaceScene extends Phaser.Scene {
     const stripe = this.add.rectangle(0, 42, 18, 63, COLORS.yellow)
     const leftLight = this.add.circle(-30, -72, 9, COLORS.white)
     const rightLight = this.add.circle(30, -72, 9, COLORS.white)
+    const wheelHubs = [
+      this.add.circle(-55, -48, 7, COLORS.yellow),
+      this.add.circle(55, -48, 7, COLORS.yellow),
+      this.add.circle(-55, 52, 7, COLORS.yellow),
+      this.add.circle(55, 52, 7, COLORS.yellow),
+    ]
+    const rearBumper = this.add.rectangle(0, 76, 72, 12, COLORS.white)
+    const hoodStar = this.add.text(0, -56, '★', {
+      color: '#fff8e7',
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '26px',
+      fontStyle: 'bold',
+    })
+    hoodStar.setOrigin(0.5)
 
     return this.add.container(ROAD_CENTER, CAR_Y, [
       shadow,
@@ -345,14 +427,24 @@ export class RaceScene extends Phaser.Scene {
       stripe,
       leftLight,
       rightLight,
+      ...wheelHubs,
+      rearBumper,
+      hoodStar,
     ])
   }
 
   private createScoreCounter(): Phaser.GameObjects.Text {
+    const pill = this.add.rectangle(898, 54, 120, 68, COLORS.white)
+    const leftCap = this.add.circle(838, 54, 34, COLORS.white)
+    const rightCap = this.add.circle(958, 54, 34, COLORS.white)
+    pill.setDepth(19)
+    leftCap.setDepth(19)
+    rightCap.setDepth(19)
+
     const counter = this.add.text(WIDTH - 34, 54, '⭐ 0', {
       color: '#18243b',
       fontFamily: 'Arial Rounded MT Bold, Trebuchet MS, sans-serif',
-      fontSize: '46px',
+      fontSize: '52px',
       fontStyle: 'bold',
       stroke: '#fff8e7',
       strokeThickness: 7,
@@ -379,6 +471,15 @@ export class RaceScene extends Phaser.Scene {
           ),
         )
       }
+    }
+
+    for (const x of [-this.track.roadWidth / 2 - 28, this.track.roadWidth / 2 + 28]) {
+      const flag = this.add.text(x, 28, '🏁', {
+        fontSize: '34px',
+        fontFamily: 'Arial, sans-serif',
+      })
+      flag.setOrigin(0.5)
+      finish.add(flag)
     }
 
     finish.setVisible(false)

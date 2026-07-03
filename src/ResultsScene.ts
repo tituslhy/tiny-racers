@@ -52,32 +52,35 @@ export class ResultsScene extends Phaser.Scene {
     this.drawCheckeredCorner(196, 66)
     this.drawCheckeredCorner(780, 66)
 
-    this.addCenteredText(512, 142, 'Amazing Driving!', '64px', '#18243b', {
+    this.addCenteredText(512, 104, 'Amazing Driving!', '64px', '#18243b', {
       stroke: '#ffd43b',
       strokeThickness: 8,
     })
-    this.addCenteredText(512, 248, `Score: ${this.results.score}`, '68px', '#f04444')
-    this.addCenteredText(
-      512,
-      338,
-      `Collected: ${this.results.collected} items`,
-      '38px',
-      '#18243b',
-    )
-    this.addCenteredText(
-      512,
-      392,
-      `Obstacles Hit: ${this.results.obstaclesHit}`,
-      '38px',
-      '#18243b',
-    )
+    const trophy = this.addCenteredText(512, 178, '🏆', '64px', '#18243b')
 
-    this.createButton(510, 'Race Again', COLORS.red, COLORS.redDark, () => {
+    const scoreCard = this.add.rectangle(512, 275, 500, 150, COLORS.yellow)
+    scoreCard.setStrokeStyle(7, COLORS.red)
+    this.addCenteredText(512, 235, 'SCORE', '32px', '#18243b')
+    this.addCenteredText(512, 292, `${this.results.score}`, '82px', '#f04444')
+
+    const collectedCard = this.add.rectangle(385, 410, 230, 130, 0xfff2bd)
+    collectedCard.setStrokeStyle(6, COLORS.green)
+    this.addCenteredText(385, 387, `${this.results.collected}`, '58px', '#18243b')
+    this.addCenteredText(385, 442, 'Collected', '28px', '#18243b')
+
+    const bumpsCard = this.add.rectangle(639, 410, 230, 130, 0xffe1dc)
+    bumpsCard.setStrokeStyle(6, COLORS.red)
+    this.addCenteredText(639, 387, `${this.results.obstaclesHit}`, '58px', '#18243b')
+    this.addCenteredText(639, 442, 'Silly Bumps', '28px', '#18243b')
+
+    this.createButton(565, 'Race Again', COLORS.red, COLORS.redDark, () => {
       this.scene.start('race', { trackId: this.results.trackId })
     })
-    this.createButton(622, 'Choose Track', COLORS.blue, 0x1857ad, () => {
+    this.createButton(680, 'Choose Track', COLORS.blue, 0x1857ad, () => {
       this.scene.start('track-select')
     })
+
+    this.playCelebration(trophy)
   }
 
   private drawCheckeredCorner(startX: number, startY: number): void {
@@ -122,7 +125,7 @@ export class ResultsScene extends Phaser.Scene {
     borderColor: number,
     onPress: () => void,
   ): void {
-    const button = this.add.rectangle(WIDTH / 2, y, 420, 88, color)
+    const button = this.add.rectangle(WIDTH / 2, y, 500, 96, color)
     button.setStrokeStyle(7, borderColor)
     button.setInteractive({ useHandCursor: true })
 
@@ -141,5 +144,34 @@ export class ResultsScene extends Phaser.Scene {
       button.setScale(1)
       text.setScale(1)
     })
+  }
+
+  private playCelebration(trophy: Phaser.GameObjects.Text): void {
+    trophy.setScale(0.75)
+    this.tweens.add({
+      targets: trophy,
+      scale: 1,
+      duration: 360,
+      ease: 'Back.Out',
+    })
+
+    const colors = [COLORS.yellow, COLORS.red, COLORS.green, COLORS.blue]
+    for (let index = 0; index < 12; index += 1) {
+      const left = index % 2 === 0
+      const x = left ? 150 + (index % 3) * 28 : 874 - (index % 3) * 28
+      const y = 90 + (index % 6) * 82
+      const piece = this.add.rectangle(x, y, 14, 28, colors[index % colors.length])
+      piece.setDepth(2)
+      this.tweens.add({
+        targets: piece,
+        y: y + 110,
+        angle: left ? 150 : -150,
+        alpha: 0,
+        duration: 760 + index * 20,
+        delay: index * 35,
+        ease: 'Sine.Out',
+        onComplete: () => piece.destroy(),
+      })
+    }
   }
 }

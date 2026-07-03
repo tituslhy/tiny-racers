@@ -372,6 +372,142 @@ Final review and browser validation:
 
 1. Install the production PWA on a physical iPad, launch it in landscape, then cold-launch and play it in airplane mode before travel.
 
+## Milestone 7: Offline PWA Hardening
+
+Status: the implementation and local verification are complete. The required physical-iPad airplane-mode test is still outstanding.
+
+### Implemented Offline Readiness
+
+New `src/offlineReady.ts` and the track-selection integration:
+
+- wait for `navigator.serviceWorker.ready` before reporting that offline installation is ready;
+- initially show `Getting travel-ready…` on the track-selection screen;
+- change the message to `✅ Ready to play offline` only after service-worker readiness resolves successfully;
+- leave gameplay available if service workers are unavailable or readiness rejects;
+- avoid updating a Phaser text object after its scene object becomes inactive;
+- preserve the existing three track cards, touch interactions, track configurations, and accent colors.
+
+### Implemented Installability and Offline Build Checks
+
+The existing generated Workbox service worker remains configured through `vite-plugin-pwa` with automatic update registration. Milestone 7 adds:
+
+- a root-scoped manifest for the Vercel deployment with `start_url`, `scope`, and `id` set to `/`;
+- standalone landscape display metadata, English language metadata, and `games`/`kids` categories;
+- local 192×192, 512×512, maskable 512×512, and Apple 180×180 install icons;
+- Apple Home Screen title and touch-icon metadata in `index.html`;
+- no remote runtime assets or external runtime API;
+- a dependency-free `scripts/verify-pwa.mjs` emitted-build check;
+- automatic PWA verification as part of every `npm run build`.
+
+The emitted-build verifier checks the required manifest and icon contract, confirms required files exist, rejects remote HTML asset URLs, and verifies required application and install assets are represented in the generated service-worker output.
+
+### Travel Runbook and Runtime Scope
+
+`README.md` now documents:
+
+- clean-install, test, typecheck, production-build, and preview commands;
+- the HTTPS Vercel and iPad Safari installation procedure;
+- waiting for the offline-ready message before disconnecting;
+- a full pre-flight airplane-mode checklist covering cold launch, all three tracks, steering, collectibles, obstacles, results, replay, track selection, reboot, and a repeated offline launch;
+- the requirement to record the iPad model, iPadOS version, date, and pass/fail result.
+
+Source-only review found no application use of `fetch`, XMLHttpRequest, WebSocket, remote Phaser loaders, remote HTTP assets, IndexedDB, or `localStorage`. Browser persistence is therefore optional rather than required for gameplay, and there is no runtime network dependency in the application source.
+
+### Milestone 7 TDD, Verification, and Review Evidence
+
+Recorded red-green cycles:
+
+- readiness-helper tests first failed because `src/offlineReady.ts` did not exist, then all 3 helper tests passed;
+- track-selection status coverage first failed because the initial readiness message was absent, then the focused helper and scene suite passed;
+- the emitted-PWA verifier first failed against the previous manifest because the required icon contract was absent, then passed after the local icons and manifest metadata were added;
+- a follow-up lifecycle test confirms an inactive readiness-status object is not updated.
+
+The 2026-07-02 code-review verification pass recorded:
+
+- `npm test`: 7 test files passed, 47 tests passed, 0 failures;
+- `npx tsc --noEmit`: passed with no TypeScript errors;
+- `npm run build`: passed and printed `PWA verification passed`;
+- Workbox generated 9 precache entries totaling approximately 1,659.96 KiB, including the hashed application bundle;
+- install-icon dimensions were confirmed as 180×180, 192×192, 512×512, and 512×512;
+- the source-only runtime network and storage audit found no matches;
+- final code review found no Critical or Important code defect.
+
+The production-preview and offline-browser pass then confirmed:
+
+- `/`, `/manifest.webmanifest`, `/sw.js`, and all four install-icon paths returned HTTP 200;
+- the track-selection screen reached `✅ Ready to play offline` under service-worker control;
+- after the preview server was stopped, a direct HTTP request failed while a browser reload still opened the cached track-selection screen;
+- a complete Beach race ran with the server offline, including steering, 2 collectibles, 1 obstacle hit, successful results, and a score of 10;
+- `Race Again` started the same Beach track offline, and `Choose Track` returned to selection after the replay;
+- the browser recorded no warning or error console entries during the offline flow.
+
+The existing non-blocking Vite large-chunk warning remains: the Phaser application bundle is approximately 1,698.38 kB minified and 385.93 kB gzipped. Because readiness depends on service-worker installation, the offline-ready message must be observed on the target iPad before travel.
+
+### Milestone 7 Remaining Verification
+
+1. Install the HTTPS Vercel deployment on the physical iPad and complete the README airplane-mode cold-launch and reboot checklist shortly before travel.
+
+Milestone 7 changes remain uncommitted unless the user explicitly requests a commit.
+
+## Milestone 8: Visual Polish and Delight
+
+Status: implementation, automated verification, code review, production-browser validation, and offline reload validation are complete. The physical-iPad visual, touch, installation, and airplane-mode check remains outstanding.
+
+### Implemented Visual Direction
+
+Milestone 8 applies the approved layered toy-box, storybook, and mini-carnival direction without changing gameplay:
+
+- chunky cream-outlined shapes, soft shadows, large controls, and a brighter toy car provide the shared toy-box language;
+- explicit Backyard, Forest, and Beach palettes and scenery make each track read as a different storybook place;
+- short collection, obstacle, finish, card-entrance, trophy, and confetti effects reserve carnival motion for feedback and celebration.
+
+Track configuration now includes explicit `roadColor` and `edgeColor` values for all three tracks. Road widths, speeds, `TRACK_LENGTH`, layouts, collision bounds, scoring, penalties, steering, finish timing, and scene payloads remain unchanged.
+
+### Implemented Screen Polish
+
+Track selection now uses three complete 280×450 interactive toy-card containers with offset shadows, accent borders, local miniature scenes, pale collectible rows, contrasting obstacle rows, whole-card press feedback, and finite staggered entrance tweens. The exact track IDs and truthful service-worker readiness message are preserved.
+
+Race presentation now includes:
+
+- track-specific road surfaces and colorful shoulders while logical bounds still use configured road width;
+- explicit Backyard fences and flowers, Forest trees and mushrooms, and Beach water bands, waves, and sun/coral shapes;
+- sticker-container collectibles and warning-style obstacle tokens with fixed logical collision geometry;
+- deterministic collectible wiggle, one-shot `+10 ✨` feedback, score pop, and finite obstacle squash/wobble feedback;
+- a brighter toy car with wheel hubs, bumper, and hood star;
+- a large cream score pill and finish-line flag icons.
+
+Results now uses unconditional `Amazing Driving!` praise, a trophy, a large yellow score hierarchy, separate `Collected` and `Silly Bumps` cards, two immediate 500×96 actions, a finite trophy pop, and 12 finite confetti tweens. Same-track replay and `Choose Track` navigation are unchanged.
+
+### Milestone 8 Verification
+
+Fresh automated verification on 2026-07-03:
+
+- `npm test`: 7 test files passed, 54 tests passed, 0 failures;
+- `npx tsc --noEmit`: passed with no diagnostics;
+- `npm run build`: passed and printed `PWA verification passed`;
+- Vite generated a 1,702.70 kB application bundle (387.13 kB gzipped);
+- Workbox precached 9 entries totaling approximately 1,664.18 KiB, including the hashed application bundle;
+- the existing non-blocking Vite large-chunk advisory remains.
+
+Final code review found 0 Critical and 0 Important findings. It recorded three Minor plan/spec tensions involving the exact planned depth ordering and shared card-scale entrance tween; the review judged the milestone ready and the plan-mandated implementation remains unchanged.
+
+Production-browser validation at 1024×768 confirmed:
+
+- `/`, `/manifest.webmanifest`, `/sw.js`, and all four install-icon paths returned HTTP 200;
+- the heading, offline-ready badge, three whole-card targets, distinct miniature previews, labels, icons, and shadows remain readable and inside the fixed canvas;
+- Backyard, Forest, and Beach each start with one tap and render distinct road, shoulder, and scenery treatments;
+- the toy car, score pill, sticker objects, steering, collectible scoring, obstacle penalty, finish flags, and successful race completion remain functional;
+- a Beach race recorded 2 collectibles, 2 obstacle contacts, and a final score of 10, then displayed the exact results hierarchy;
+- `Race Again` restarted Beach and `Choose Track` returned to selection;
+- the browser recorded no warning or error console entries;
+- after the offline-ready badge appeared and the preview server stopped, a browser reload still opened the polished track-selection screen from the service-worker cache, and an offline Beach race remained playable.
+
+### Milestone 8 Remaining Release Check
+
+1. On the physical target iPad, verify the polished screens at landscape size, large touch targets, steering, short feedback animations, full race completion, installed-PWA cold launch, reboot, and airplane-mode play before travel.
+
+Milestone 8 changes remain uncommitted unless the user explicitly requests a commit.
+
 ## Constraints
 
 - Frontend only: Vite, TypeScript, Phaser, and `vite-plugin-pwa`.

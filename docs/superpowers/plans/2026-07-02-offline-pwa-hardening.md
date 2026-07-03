@@ -32,7 +32,7 @@
 - Produces: `waitForOfflineReady(serviceWorker?: ServiceWorkerReady): Promise<boolean>`.
 - Changes: track selection initially renders `Getting travel-ready…` and changes it to `✅ Ready to play offline` only after the helper resolves `true`.
 
-- [ ] **Step 1: Write failing helper tests**
+- [x] **Step 1: Write failing helper tests**
 
 Create `src/offlineReady.test.ts` with real resolved and rejected promises:
 
@@ -55,13 +55,13 @@ describe('waitForOfflineReady', () => {
 })
 ```
 
-- [ ] **Step 2: Run helper tests and verify RED**
+- [x] **Step 2: Run helper tests and verify RED**
 
 Run: `npm test -- src/offlineReady.test.ts`
 
 Expected: FAIL because `src/offlineReady.ts` does not exist.
 
-- [ ] **Step 3: Implement the minimal readiness helper**
+- [x] **Step 3: Implement the minimal readiness helper**
 
 Create `src/offlineReady.ts`:
 
@@ -83,13 +83,13 @@ export async function waitForOfflineReady(
 }
 ```
 
-- [ ] **Step 4: Run helper tests and verify GREEN**
+- [x] **Step 4: Run helper tests and verify GREEN**
 
 Run: `npm test -- src/offlineReady.test.ts`
 
 Expected: 3 tests pass.
 
-- [ ] **Step 5: Write failing track-selection status tests**
+- [x] **Step 5: Write failing track-selection status tests**
 
 Mock `waitForOfflineReady`, add `active: true` and `setText` to the scene display-object double, and assert:
 
@@ -100,13 +100,13 @@ await vi.waitFor(() => expect(status.setText).toHaveBeenCalledWith('✅ Ready to
 
 Retain the existing three exact accent-border assertions unchanged.
 
-- [ ] **Step 6: Run scene tests and verify RED**
+- [x] **Step 6: Run scene tests and verify RED**
 
 Run: `npm test -- src/TrackSelectScene.test.ts`
 
 Expected: FAIL because the readiness text and update do not exist.
 
-- [ ] **Step 7: Add the non-blocking status badge**
+- [x] **Step 7: Add the non-blocking status badge**
 
 Import `waitForOfflineReady`. In `create()`, draw a rounded-looking green rectangle and centered initial status below the cards, then update only an active text object:
 
@@ -126,7 +126,7 @@ void waitForOfflineReady().then((ready) => {
 
 Keep all track cards, tap handlers, and the user’s accent-color change intact.
 
-- [ ] **Step 8: Run focused tests and verify GREEN**
+- [x] **Step 8: Run focused tests and verify GREEN**
 
 Run: `npm test -- src/offlineReady.test.ts src/TrackSelectScene.test.ts`
 
@@ -150,7 +150,7 @@ Expected: all helper and selection tests pass.
 **Interfaces:**
 - Produces: a root-scoped standalone landscape manifest with local 192, 512, and maskable icons; Apple Home Screen icon metadata; `npm run verify:pwa`.
 
-- [ ] **Step 1: Add a failing emitted-PWA verifier**
+- [x] **Step 1: Add a failing emitted-PWA verifier**
 
 Create `scripts/verify-pwa.mjs` using only `node:assert/strict`, `node:fs`, and `node:path`. It must read `dist/manifest.webmanifest`, `dist/index.html`, and `dist/sw.js`, then assert:
 
@@ -175,13 +175,13 @@ For each icon, assert the emitted file exists. Extract local `src` and styleshee
 
 Add `"verify:pwa": "node scripts/verify-pwa.mjs"` to `package.json` without changing `build` yet.
 
-- [ ] **Step 2: Build and verify RED**
+- [x] **Step 2: Build and verify RED**
 
 Run: `npm run build && npm run verify:pwa`
 
 Expected: build succeeds, then verifier fails because required manifest fields/icons are absent.
 
-- [ ] **Step 3: Create local icon artwork and PNG sizes**
+- [x] **Step 3: Create local icon artwork and PNG sizes**
 
 Create one square SVG with a blue background, safe yellow inner circle, and centered simple pink racing car made from vector rectangles/circles. Keep all important artwork inside the central 66% so it remains safe when masked.
 
@@ -193,7 +193,7 @@ sips -g pixelWidth -g pixelHeight public/icons/*.png
 
 Expected: the reported dimensions match each filename. Do not reference the SVG or any remote image at runtime.
 
-- [ ] **Step 4: Harden manifest and Apple metadata**
+- [x] **Step 4: Harden manifest and Apple metadata**
 
 Add `scope: '/'`, `id: '/'`, `lang: 'en'`, `categories: ['games', 'kids']`, and the three exact manifest icon entries to `vite.config.ts`. Add these local links to `index.html`:
 
@@ -204,7 +204,7 @@ Add `scope: '/'`, `id: '/'`, `lang: 'en'`, `categories: ['games', 'kids']`, and 
 
 Retain automatic update registration, standalone mode, landscape orientation, and all current viewport/status metadata.
 
-- [ ] **Step 5: Make production builds self-verifying**
+- [x] **Step 5: Make production builds self-verifying**
 
 Change the build script to:
 
@@ -212,7 +212,7 @@ Change the build script to:
 "build": "tsc && vite build && npm run verify:pwa"
 ```
 
-- [ ] **Step 6: Build and verify GREEN**
+- [x] **Step 6: Build and verify GREEN**
 
 Run: `npm run build`
 
@@ -228,7 +228,7 @@ Expected: Vite generates the app, manifest, and service worker; Workbox reports 
 **Interfaces:**
 - Produces: exact local verification, Vercel installation, and physical-iPad airplane-mode test instructions.
 
-- [ ] **Step 1: Document local production verification**
+- [x] **Step 1: Document local production verification**
 
 Add a `Development and PWA Verification` section with:
 
@@ -242,19 +242,19 @@ npm run preview -- --host 127.0.0.1
 
 State that `npm run build` validates manifest metadata, install icons, precache membership, navigation fallback, and local HTML assets. Explain that localhost is valid for desktop service-worker checks, while an iPad must use the HTTPS Vercel deployment rather than LAN HTTP preview.
 
-- [ ] **Step 2: Document iPad installation**
+- [x] **Step 2: Document iPad installation**
 
 Add `Install on iPad` steps: deploy to Vercel, open the HTTPS URL in Safari while online, Share → Add to Home Screen, launch from the icon while online, and wait for `✅ Ready to play offline` before disconnecting.
 
-- [ ] **Step 3: Document the pre-flight airplane-mode test**
+- [x] **Step 3: Document the pre-flight airplane-mode test**
 
 Add a checklist that force-closes Safari and the installed app, enables airplane mode with Wi-Fi off, cold-launches from the Home Screen, checks all three track cards, steering, collection, obstacle penalty, successful finish/results, same-track replay, Choose Track, and all three themes. Require a reboot and repeated offline cold launch, plus recording iPad model, iPadOS version, date, and pass/fail shortly before travel.
 
-- [ ] **Step 4: Clarify current versus future functionality**
+- [x] **Step 4: Clarify current versus future functionality**
 
 Label extra tracks, vehicle selection, sounds, gyroscope controls, and richer score examples as future ideas so the README does not imply Milestone 7 implements them.
 
-- [ ] **Step 5: Check documentation formatting**
+- [x] **Step 5: Check documentation formatting**
 
 Run: `git diff --check -- README.md`
 
@@ -271,47 +271,47 @@ Expected: exit code 0.
 **Interfaces:**
 - Produces: final Milestone 7 evidence and durable remaining physical-device check.
 
-- [ ] **Step 1: Run the complete automated suite**
+- [x] **Step 1: Run the complete automated suite**
 
 Run: `npm test`
 
 Expected: every test file passes with zero failures.
 
-- [ ] **Step 2: Run standalone TypeScript validation**
+- [x] **Step 2: Run standalone TypeScript validation**
 
 Run: `npx tsc --noEmit`
 
 Expected: exit code 0 with no diagnostics.
 
-- [ ] **Step 3: Build and inspect production output**
+- [x] **Step 3: Build and inspect production output**
 
 Run: `npm run build`
 
 Expected: exit code 0, `PWA verification passed`, and build output confirms the hashed JavaScript bundle is included in the Workbox precache below the configured size ceiling.
 
-- [ ] **Step 4: Start and probe production preview**
+- [x] **Step 4: Start and probe production preview**
 
 Run: `npm run preview -- --host 127.0.0.1`
 
 In a second command, request `/`, `/manifest.webmanifest`, `/sw.js`, and all four icon paths. Expected: each responds HTTP 200. Stop the preview after browser testing.
 
-- [ ] **Step 5: Verify browser offline behavior**
+- [x] **Step 5: Verify browser offline behavior**
 
 Load production preview once, wait for `✅ Ready to play offline` and service-worker control, enable browser offline mode, reload, select a track, steer, observe score changes, finish, replay the same track, and return to selection. Expected: the complete flow works with no runtime network request dependency or console error.
 
-- [ ] **Step 6: Review runtime dependency and storage scope**
+- [x] **Step 6: Review runtime dependency and storage scope**
 
 Run source-only searches excluding lockfiles, docs, tests, `node_modules`, and `dist` for `http://`, `https://`, `fetch(`, XHR, WebSocket, remote Phaser loaders, `localStorage`, and IndexedDB. Expected: no application runtime dependency or required browser persistence.
 
-- [ ] **Step 7: Request final code review**
+- [x] **Step 7: Request final code review**
 
 Review the complete Milestone 7 diff against the approved specification. Fix every Critical or Important issue and rerun the covering tests before continuing.
 
-- [ ] **Step 8: Update durable records**
+- [x] **Step 8: Update durable records**
 
 Mark completed plan checkboxes and append to `implemented.md`: exact manifest/icons, readiness semantics, no-storage/no-network findings, test count, typecheck/build/preview/browser results, and the physical-iPad test that remains outstanding.
 
-- [ ] **Step 9: Run final scope checks**
+- [x] **Step 9: Run final scope checks**
 
 Run:
 

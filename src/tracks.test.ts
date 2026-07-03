@@ -11,6 +11,8 @@ describe('track configuration', () => {
     expect(TRACKS.backyard).toMatchObject({
       name: 'Backyard',
       emoji: '🌱',
+      roadColor: 0x596273,
+      edgeColor: 0xffd43b,
       roadWidth: 504,
       speed: 420,
       collectibles: ['🌼', '🍌', '🦋'],
@@ -19,6 +21,8 @@ describe('track configuration', () => {
     expect(TRACKS.forest).toMatchObject({
       name: 'Forest',
       emoji: '🌲',
+      roadColor: 0x3f5149,
+      edgeColor: 0xa8e063,
       roadWidth: 460,
       speed: 480,
       collectibles: ['🍄', '🐦', '🌰'],
@@ -27,6 +31,8 @@ describe('track configuration', () => {
     expect(TRACKS.beach).toMatchObject({
       name: 'Beach',
       emoji: '🏖️',
+      roadColor: 0x58617a,
+      edgeColor: 0xff7f66,
       roadWidth: 440,
       speed: 540,
       collectibles: ['🐚', '🥥', '⭐'],

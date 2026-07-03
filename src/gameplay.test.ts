@@ -4,8 +4,8 @@ import {
   advanceRace,
   centeredBoundsOverlap,
   clampCarX,
-  collectibleY,
   isRaceFinished,
+  travelY,
 } from './gameplay'
 
 describe('clampCarX', () => {
@@ -42,13 +42,13 @@ describe('isRaceFinished', () => {
   })
 })
 
-describe('collectibleY', () => {
-  it('places a collectible at its start position when it spawns', () => {
-    expect(collectibleY(0.25, 0.25, -50, 818, 0.3)).toBe(-50)
+describe('travelY', () => {
+  it('places an object at its start position when it spawns', () => {
+    expect(travelY(0.25, 0.25, -50, 818, 0.3)).toBe(-50)
   })
 
-  it('moves a collectible according to race progress', () => {
-    expect(collectibleY(0.4, 0.25, -50, 818, 0.3)).toBeCloseTo(384)
+  it('moves an object according to race progress', () => {
+    expect(travelY(0.4, 0.25, -50, 818, 0.3)).toBeCloseTo(384)
   })
 })
 

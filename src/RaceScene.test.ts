@@ -36,31 +36,53 @@ type TestableRaceScene = {
       setVisible(visible: boolean): void
     }
     text?(...args: unknown[]): {
-      setOrigin(...args: unknown[]): void
-      setDepth(...args: unknown[]): void
-      setPosition(x: number, y: number): void
-      setVisible(visible: boolean): void
+      setOrigin?(...args: unknown[]): void
+      setDepth?(...args: unknown[]): void
+      setAngle?(...args: unknown[]): void
+      setScale?(...args: unknown[]): void
+      setAlpha?(...args: unknown[]): void
+      setPosition?(x: number, y: number): void
+      setVisible?(visible: boolean): void
+      destroy?(): void
     }
     rectangle?(...args: unknown[]): {
-      setStrokeStyle(...args: unknown[]): void
+      setDepth?(...args: unknown[]): void
+      setStrokeStyle?(...args: unknown[]): void
+    }
+    circle?(...args: unknown[]): {
+      setDepth?(...args: unknown[]): void
+      setStrokeStyle?(...args: unknown[]): void
+    }
+    ellipse?(...args: unknown[]): {
+      setStrokeStyle?(...args: unknown[]): void
     }
     container?(...args: unknown[]): {
       y?: number
       add?(child: unknown): void
-      setPosition(x: number, y: number): void
-      setVisible(visible: boolean): void
+      setAngle?(...args: unknown[]): void
+      setScale?(...args: unknown[]): void
+      setAlpha?(...args: unknown[]): void
+      setDepth?(...args: unknown[]): void
+      setOrigin?(...args: unknown[]): void
+      setStrokeStyle?(...args: unknown[]): void
+      setPosition?(x: number, y: number): void
+      setVisible?(visible: boolean): void
+      destroy?(): void
     }
   }
   score: number
-  scoreText: { setText(text: string): void }
+  scoreText: { setText(text: string): void; setScale?(scale: number): void }
   scene: { start(key: string, data?: unknown): void }
   collectibles: Array<{
     x: number
     spawnProgress: number
+    phase: number
     sprite: {
       y?: number
       setPosition(x: number, y: number): void
       setVisible(visible: boolean): void
+      setAngle(angle: number): void
+      setScale(scale: number): void
     }
     collected: boolean
   }>
@@ -79,9 +101,12 @@ type TestableRaceScene = {
     setPosition(x: number, y: number): void
   }>
   init(data: { trackId?: string }): void
+  drawRoad(): void
+  createCar(): unknown
   createLaneDashes(): void
   createCollectibles(): void
   updateCollectibles(): void
+  playCollectFeedback(x: number, y: number): void
   createObstacles(): void
   updateObstacles(): void
   playObstacleFeedback(): void
@@ -114,17 +139,38 @@ describe('RaceScene', () => {
     expect(scene.track.id).toBe('backyard')
   })
 
+  it('draws the selected track road and colorful shoulders without changing bounds', () => {
+    const scene = createTestScene()
+    scene.init({ trackId: 'forest' })
+    scene.add = { rectangle: vi.fn(() => ({ setStrokeStyle: vi.fn() })) } as TestableRaceScene['add']
+
+    scene.drawRoad()
+
+    expect(scene.add.rectangle).toHaveBeenCalledWith(512, 438, 496, 660, 0xa8e063)
+    expect(scene.add.rectangle).toHaveBeenCalledWith(512, 438, 460, 660, 0x3f5149)
+    expect(scene.roadLeft).toBe(282)
+    expect(scene.roadRight).toBe(742)
+  })
+
   it('creates six collectible emojis from the selected track set', () => {
     const scene = createTestScene()
     scene.init({ trackId: 'forest' })
     const emoji = () => ({
       setOrigin: vi.fn(),
       setDepth: vi.fn(),
+      setAngle: vi.fn(),
+      setScale: vi.fn(),
+      setAlpha: vi.fn(),
       setPosition: vi.fn(),
       setVisible: vi.fn(),
+      destroy: vi.fn(),
     })
     const addText = vi.fn((_x: number, _y: number, _value: string) => emoji())
-    scene.add = { text: addText } as TestableRaceScene['add']
+    scene.add = {
+      circle: vi.fn(() => ({ setDepth: vi.fn(), setStrokeStyle: vi.fn() })),
+      text: addText,
+      container: vi.fn(() => emoji()),
+    } as TestableRaceScene['add']
 
     scene.createCollectibles()
 
@@ -144,11 +190,17 @@ describe('RaceScene', () => {
 
   it('moves an active collectible down the road as race progress increases', () => {
     const scene = createTestScene()
-    const sprite = { y: -50, setPosition: vi.fn((_x: number, y: number) => { sprite.y = y }), setVisible: vi.fn() }
+    const sprite = {
+      y: -50,
+      setPosition: vi.fn((_x: number, y: number) => { sprite.y = y }),
+      setVisible: vi.fn(),
+      setAngle: vi.fn(),
+      setScale: vi.fn(),
+    }
     scene.progress = 0.1
     scene.car = { x: 700, y: 620 }
     scene.scoreText = { setText: vi.fn() }
-    scene.collectibles = [{ x: 372, spawnProgress: 0.02, sprite, collected: false }]
+    scene.collectibles = [{ x: 372, spawnProgress: 0.02, phase: 0, sprite, collected: false }]
 
     scene.updateCollectibles()
     const firstY = sprite.y
@@ -164,11 +216,19 @@ describe('RaceScene', () => {
     const obstacleSprite = () => ({
       setOrigin: vi.fn(),
       setDepth: vi.fn(),
+      setAngle: vi.fn(),
+      setScale: vi.fn(),
+      setAlpha: vi.fn(),
       setPosition: vi.fn(),
       setVisible: vi.fn(),
+      destroy: vi.fn(),
     })
     const addText = vi.fn((_x: number, _y: number, _value: string) => obstacleSprite())
-    scene.add = { text: addText } as TestableRaceScene['add']
+    scene.add = {
+      circle: vi.fn(() => ({ setDepth: vi.fn(), setStrokeStyle: vi.fn() })),
+      text: addText,
+      container: vi.fn(() => obstacleSprite()),
+    } as TestableRaceScene['add']
 
     scene.createObstacles()
 
@@ -253,7 +313,8 @@ describe('RaceScene', () => {
     expect(scene.tweens.killTweensOf).toHaveBeenCalledWith(scene.car)
     expect(scene.tweens.add).toHaveBeenCalledWith(expect.objectContaining({
       targets: scene.car,
-      duration: 220,
+      angle: { from: -10, to: 0 },
+      duration: 260,
       ease: 'Bounce.Out',
     }))
     expect(scene.state).toBe('racing')
@@ -262,12 +323,18 @@ describe('RaceScene', () => {
   it('hides a collected star and adds ten points only once', () => {
     const scene = createTestScene()
     const y = 620
-    const sprite = { setPosition: vi.fn(), setVisible: vi.fn() }
+    const sprite = {
+      setPosition: vi.fn(),
+      setVisible: vi.fn(),
+      setAngle: vi.fn(),
+      setScale: vi.fn(),
+    }
     scene.progress = 0.02 + ((y + 50) / 868) * 0.3
     scene.car = { x: 512, y }
     scene.score = 0
     scene.scoreText = { setText: vi.fn() }
-    scene.collectibles = [{ x: 512, spawnProgress: 0.02, sprite, collected: false }]
+    scene.playCollectFeedback = vi.fn()
+    scene.collectibles = [{ x: 512, spawnProgress: 0.02, phase: 0, sprite, collected: false }]
 
     scene.updateCollectibles()
     scene.updateCollectibles()
@@ -279,6 +346,48 @@ describe('RaceScene', () => {
     expect(scene.scoreText.setText).toHaveBeenCalledWith('⭐ 10')
   })
 
+  it('invokes finite collection feedback after awarding ten points once', () => {
+    const scene = createTestScene()
+    const y = 620
+    const sprite = {
+      setPosition: vi.fn(), setVisible: vi.fn(), setAngle: vi.fn(), setScale: vi.fn(),
+    }
+    scene.progress = 0.02 + ((y + 50) / 868) * 0.3
+    scene.car = { x: 512, y }
+    scene.score = 0
+    scene.scoreText = { setText: vi.fn() }
+    scene.playCollectFeedback = vi.fn()
+    scene.collectibles = [{ x: 512, spawnProgress: 0.02, phase: 0, sprite, collected: false }]
+
+    scene.updateCollectibles()
+    scene.updateCollectibles()
+
+    expect(scene.score).toBe(10)
+    expect(scene.playCollectFeedback).toHaveBeenCalledTimes(1)
+    expect(scene.playCollectFeedback).toHaveBeenCalledWith(512, 620)
+  })
+
+  it('gives visible collectibles bounded sticker motion without changing travel y', () => {
+    const scene = createTestScene()
+    const sprite = {
+      y: -50,
+      setPosition: vi.fn((_x: number, y: number) => { sprite.y = y }),
+      setVisible: vi.fn(),
+      setAngle: vi.fn(),
+      setScale: vi.fn(),
+    }
+    scene.progress = 0.1
+    scene.car = { x: 700, y: 620 }
+    scene.scoreText = { setText: vi.fn() }
+    scene.collectibles = [{ x: 372, spawnProgress: 0.02, phase: 0, sprite, collected: false }]
+
+    scene.updateCollectibles()
+
+    expect(sprite.setAngle).toHaveBeenCalledWith(expect.any(Number))
+    expect(sprite.setScale).toHaveBeenCalledWith(expect.any(Number))
+    expect(sprite.y).toBeCloseTo(181.47, 1)
+  })
+
   it('creates a large score counter with an initial zero score', () => {
     const scene = createTestScene()
     const counter = {
@@ -288,7 +397,11 @@ describe('RaceScene', () => {
       setVisible: vi.fn(),
     }
     const addText = vi.fn(() => counter)
-    scene.add = { text: addText } as TestableRaceScene['add']
+    scene.add = {
+      text: addText,
+      rectangle: vi.fn(() => ({ setDepth: vi.fn(), setStrokeStyle: vi.fn() })),
+      circle: vi.fn(() => ({ setDepth: vi.fn(), setStrokeStyle: vi.fn() })),
+    } as TestableRaceScene['add']
 
     const result = scene.createScoreCounter()
 
@@ -296,7 +409,7 @@ describe('RaceScene', () => {
       990,
       54,
       '⭐ 0',
-      expect.objectContaining({ fontSize: '46px', fontStyle: 'bold' }),
+      expect.objectContaining({ fontSize: '52px', fontStyle: 'bold' }),
     )
     expect(counter.setOrigin).toHaveBeenCalledWith(1, 0.5)
     expect(counter.setDepth).toHaveBeenCalledWith(20)
@@ -318,7 +431,13 @@ describe('RaceScene', () => {
     scene.collectibles = layout.map(({ x, spawnProgress }) => ({
       x,
       spawnProgress,
-      sprite: { setPosition: vi.fn(), setVisible: vi.fn() },
+      phase: 0,
+      sprite: {
+        setPosition: vi.fn(),
+        setVisible: vi.fn(),
+        setAngle: vi.fn(),
+        setScale: vi.fn(),
+      },
       collected: true,
     }))
 
@@ -410,9 +529,11 @@ describe('RaceScene', () => {
     scene.init({ trackId: 'beach' })
     const finish = { add: vi.fn(), setVisible: vi.fn(), setPosition: vi.fn() }
     const rectangle = { setStrokeStyle: vi.fn() }
+    const flag = { setOrigin: vi.fn() }
     scene.add = {
       container: vi.fn(() => finish),
       rectangle: vi.fn(() => rectangle),
+      text: vi.fn(() => flag),
     } as TestableRaceScene['add']
 
     scene.createFinishLine()
@@ -424,6 +545,21 @@ describe('RaceScene', () => {
       440 / 12,
       30,
       expect.any(Number),
+    )
+    expect(scene.add.text).toHaveBeenCalledTimes(2)
+    expect(scene.add.text).toHaveBeenNthCalledWith(
+      1,
+      -440 / 2 - 28,
+      28,
+      '🏁',
+      { fontSize: '34px', fontFamily: 'Arial, sans-serif' },
+    )
+    expect(scene.add.text).toHaveBeenNthCalledWith(
+      2,
+      440 / 2 + 28,
+      28,
+      '🏁',
+      { fontSize: '34px', fontFamily: 'Arial, sans-serif' },
     )
   })
 
@@ -443,14 +579,19 @@ describe('RaceScene', () => {
   it('starts the results scene once with the final race totals', () => {
     const scene = createTestScene()
     scene.init({ trackId: 'forest' })
-    const sprite = { setPosition: vi.fn(), setVisible: vi.fn() }
+    const sprite = {
+      setPosition: vi.fn(),
+      setVisible: vi.fn(),
+      setAngle: vi.fn(),
+      setScale: vi.fn(),
+    }
     scene.state = 'racing'
     scene.score = 30
     scene.scene = { start: vi.fn() }
     scene.collectibles = [
-      { x: 372, spawnProgress: 0.02, sprite, collected: true },
-      { x: 652, spawnProgress: 0.14, sprite, collected: true },
-      { x: 512, spawnProgress: 0.26, sprite, collected: false },
+      { x: 372, spawnProgress: 0.02, phase: 0, sprite, collected: true },
+      { x: 652, spawnProgress: 0.14, phase: 0, sprite, collected: true },
+      { x: 512, spawnProgress: 0.26, phase: 0, sprite, collected: false },
     ]
     scene.obstacles = [
       { x: 512, spawnProgress: 0.08, sprite, hit: true },

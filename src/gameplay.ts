@@ -22,7 +22,7 @@ export function isRaceFinished(progress: number): boolean {
   return progress >= 1
 }
 
-export function collectibleY(
+export function travelY(
   progress: number,
   spawnProgress: number,
   startY: number,

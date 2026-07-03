@@ -7,6 +7,8 @@ export interface TrackConfig {
   skyColor: number
   groundColor: number
   accentColor: number
+  roadColor: number
+  edgeColor: number
   roadWidth: number
   speed: number
   collectibles: readonly string[]
@@ -23,6 +25,8 @@ export const TRACKS = {
     skyColor: 0x38bdf8,
     groundColor: 0x65c466,
     accentColor: 0xffd43b,
+    roadColor: 0x596273,
+    edgeColor: 0xffd43b,
     roadWidth: 504,
     speed: 420,
     collectibles: ['🌼', '🍌', '🦋'],
@@ -35,6 +39,8 @@ export const TRACKS = {
     skyColor: 0xa7e4d1,
     groundColor: 0x277a45,
     accentColor: 0xa8e063,
+    roadColor: 0x3f5149,
+    edgeColor: 0xa8e063,
     roadWidth: 460,
     speed: 480,
     collectibles: ['🍄', '🐦', '🌰'],
@@ -47,6 +53,8 @@ export const TRACKS = {
     skyColor: 0x54d6dd,
     groundColor: 0xf4cf79,
     accentColor: 0xff7f66,
+    roadColor: 0x58617a,
+    edgeColor: 0xff7f66,
     roadWidth: 440,
     speed: 540,
     collectibles: ['🐚', '🥥', '⭐'],

@@ -23,6 +23,8 @@ type TestObject = {
   setStrokeStyle: ReturnType<typeof vi.fn>
   setInteractive: ReturnType<typeof vi.fn>
   setScale: ReturnType<typeof vi.fn>
+  setSize: ReturnType<typeof vi.fn>
+  add: ReturnType<typeof vi.fn>
   on(event: string, handler: Handler): TestObject
 }
 
@@ -32,7 +34,9 @@ type TestableTrackSelectScene = {
     rectangle: ReturnType<typeof vi.fn>
     circle: ReturnType<typeof vi.fn>
     text: ReturnType<typeof vi.fn>
+    container: ReturnType<typeof vi.fn>
   }
+  tweens: { add: ReturnType<typeof vi.fn> }
   create(): void
 }
 
@@ -45,6 +49,8 @@ function createDisplayObject(): TestObject {
     setStrokeStyle: vi.fn(),
     setInteractive: vi.fn(),
     setScale: vi.fn(),
+    setSize: vi.fn(),
+    add: vi.fn(),
     on(event: string, handler: Handler) {
       this.handlers[event] = handler
       return this
@@ -56,6 +62,7 @@ describe('TrackSelectScene', () => {
   let scene: TestableTrackSelectScene
   let textValues: string[]
   let cards: TestObject[]
+  let accentStrokes: unknown[][]
   let status: TestObject | undefined
 
   beforeEach(() => {
@@ -63,9 +70,18 @@ describe('TrackSelectScene', () => {
     scene.scene = { start: vi.fn() }
     textValues = []
     cards = []
+    accentStrokes = []
     status = undefined
     scene.add = {
       rectangle: vi.fn(() => {
+        const object = createDisplayObject()
+        object.setStrokeStyle.mockImplementation((...args: unknown[]) => {
+          accentStrokes.push(args)
+          return object
+        })
+        return object
+      }),
+      container: vi.fn(() => {
         const object = createDisplayObject()
         object.setInteractive.mockImplementation(() => {
           cards.push(object)
@@ -81,6 +97,7 @@ describe('TrackSelectScene', () => {
         return object
       }),
     }
+    scene.tweens = { add: vi.fn() }
   })
 
   it('shows three large child-friendly track choices', () => {
@@ -93,11 +110,34 @@ describe('TrackSelectScene', () => {
       '🏖️ Beach',
     ]))
     expect(cards).toHaveLength(3)
-    expect(cards.map((card) => card.setStrokeStyle.mock.calls[0])).toEqual([
+    expect(accentStrokes).toEqual([
       [10, 0xffd43b],
       [10, 0xa8e063],
       [10, 0xff7f66],
     ])
+  })
+
+  it('makes each whole toy card a large pressable target', () => {
+    scene.create()
+
+    expect(cards).toHaveLength(3)
+    for (const card of cards) {
+      expect(card.setSize).toHaveBeenCalledWith(280, 450)
+      card.handlers.pointerdown()
+      expect(card.setScale).toHaveBeenLastCalledWith(0.96)
+      card.handlers.pointerout()
+      expect(card.setScale).toHaveBeenLastCalledWith(1)
+    }
+  })
+
+  it('adds one finite entrance tween for each card', () => {
+    scene.create()
+
+    expect(scene.tweens.add).toHaveBeenCalledTimes(3)
+    expect(scene.tweens.add).toHaveBeenCalledWith(expect.objectContaining({
+      duration: 180,
+      ease: 'Back.Out',
+    }))
   })
 
   it('starts a race immediately with the tapped track id', () => {
