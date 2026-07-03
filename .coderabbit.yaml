@@ -3,3 +3,5 @@ reviews:
   profile: chill
   path_filters:
     - "!**/*.md"
+    - "!**/*.yaml"
+    
